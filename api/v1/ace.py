@@ -1,4 +1,4 @@
-from service.data_service import collect_data
+from service.rtsw import collect_data
 
 from fastapi import APIRouter
 

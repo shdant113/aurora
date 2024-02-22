@@ -1,4 +1,4 @@
-from service.data_service import collect_data
+from service.rtsw import collect_data
 
 from fastapi import APIRouter
 
@@ -11,3 +11,4 @@ async def discover_data():
         return collected_data
     else:
         return {"message": "No data available for DSCOVR"}
+    
