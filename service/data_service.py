@@ -20,9 +20,11 @@ def collect_wind_data(source, two_hours_ago) -> list:
     if not response:
         return []
     
+    ## SWPC gives data tagged every minute
     for minute in response:
         time_tag = datetime.strptime(minute['time_tag'], '%Y-%m-%dT%H:%M:%S')
 
+        ## return only last two hours of data for given source
         if two_hours_ago <= time_tag:
             satellite_name = minute['source']
             if satellite_name == source:
@@ -37,9 +39,11 @@ def collect_solar_data(source, two_hours_ago) -> list:
     if not response:
         return []
     
+    ## SWPC gives data tagged every minute
     for minute in response:
         time_tag = datetime.strptime(minute['time_tag'], '%Y-%m-%dT%H:%M:%S')
 
+        ## return only last two hours of data for given source
         if two_hours_ago <= time_tag:
             satellite_name = minute['source']
             if satellite_name == source:
@@ -49,15 +53,28 @@ def collect_solar_data(source, two_hours_ago) -> list:
 
 def collect_data(source) -> list:
     data = []
+    combined_data = []
+
+    ## Get wind and solar data separate - SWPC publishes two pages
     two_hours_ago = datetime.utcnow() - timedelta(hours=2)
 
     wind_data = collect_wind_data(source, two_hours_ago)
     solar_data = collect_solar_data(source, two_hours_ago)
 
+    ## Combine data for each timestamp
     for wind_entry in wind_data:
         for solar_entry in solar_data:
             if wind_entry['time_tag'] == solar_entry['time_tag']:
                 combined_entry = {**wind_entry, **solar_entry}
-                data.append(combined_entry)
+                combined_data.append(combined_entry)
+
+    ## Parse data to whatever relevant fields desired
+    relevant_fields = ['time_tag', 'proton_speed', 'proton_temperature', 'proton_density', 'bt', 'bz_gsm']
+    for entry in combined_data: 
+        for key in list(entry.keys()):
+            if key not in relevant_fields:
+                del entry[key]
+
+        data.append(entry)
 
     return data
